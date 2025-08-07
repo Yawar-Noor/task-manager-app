@@ -1,76 +1,139 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { IoSend } from "react-icons/io5";
-import { inputTitleHandleFn, inputDateHandleFn,submitHandleFn } from "../utils/inputHandle";
-import { MdDateRange } from "react-icons/md";
+import {
+  subtaskTitleHandle,
+  subtaskDescriptionHandle,
+  subtaskDueDateHandle,
+  subtaskSubmitHandleFn,
+} from "../utils/firebaseHandlers"; // Updated import
 
-
-function Form({setTasks}) {
-  
+function Form({
+  taskId,
+  formType,
+  subtask,
+  isFormVisible,
+  setIsFormVisible,
+  setEditingTaskId,
+}) {
   const [title, setTitle] = useState("");
-  const [selectedDate, setSelectedDate] = useState(null);
-  
-  let newTask = { title, date: selectedDate, uniqueId: Date.now(), isCompleted:false};
+  const [description, setDescription] = useState("");
+  const [dueDate, setDueDate] = useState(null);
+  const [errors, setErrors] = useState({});
 
-  let inputTitleHandle = inputTitleHandleFn(setTitle);
-  let submitHandle =submitHandleFn(setTasks, newTask, setTitle, setSelectedDate)
-  const inputDateHandle = inputDateHandleFn(setSelectedDate); 
+  const inputFocusRef = useRef(null);
 
-  const datePickerRef = useRef(null);
+  useEffect(() => {
+    inputFocusRef.current.focus();
+  }, [isFormVisible]);
 
-  // Trigger date picker when calender icon, by which original date input icon was replaced, is clicked
-  const triggerPicker = () => {
-    if (datePickerRef.current) {
-      datePickerRef.current.showPicker();
+  // Autofill edit form's input fields with existing value
+  useEffect(() => {
+    if (formType === "editForm" && subtask) {
+      setTitle(subtask.title || "");
+      setDescription(subtask.description);
+      setDueDate(subtask.dueDate || "");
+    } else if (formType !== "editForm") {
+      setTitle("");
+      setDescription("");
     }
-  };
+  }, [formType, subtask]);
 
+  function handleFormVisibility(result) {
+    if (result.success) {
+      setIsFormVisible(false);
+    }
+  }
 
   return (
     <form
       action="submit"
-      className="flex justify-center items-center w-fit h-fit fixed bottom-0 right-0 px-3 py-2 mx-3 my-3 bg-gray-300 rounded-2xl"
-      onSubmit={submitHandle}
+      className="flex flex-col justify-center px-3 py-2 w-full h-fit rounded-xl bg-white shadow-sm transition-shadow duration-200"
+      onSubmit={async (e) => {
+        e.preventDefault();
 
+        if (!title.trim()) {
+          setErrors((prev) => ({ ...prev, title: "Please enter a title." }));
+          return;
+        }
+
+        const result = await subtaskSubmitHandleFn(
+          e,
+          taskId,
+          formType,
+          subtask,
+          { title, description, dueDate },
+          setTitle,
+          setDescription,
+          setDueDate,
+          errors,
+          setErrors,
+          setEditingTaskId
+        );
+
+        handleFormVisibility(result);
+      }}
+      noValidate
     >
-      {/* Title Input */}
-      <input
-        className="text-gray-700 text-[14px] font-semibold leading-3.5 border-1 border-gray-700 rounded-full px-3 py-1 placeholder:text-gray-300 focus:outline-none"
-        type="text"
-        // value={title}
-        name="title"
-        id="task-title"
-        placeholder="Enter your task title"
-        onChange={inputTitleHandle}
-        required
-      />
+      <div className="w-full border-gray-400/30 rounded-xl drop-shadow-xs drop-shadow-zinc/50">
+        <div className="flex gap-2 flex-col justify-between w-full h-fit rounded-xl mb-2">
+          {/* Title Input */}
+          <input
+            className="w-full h-6 px-1 text-zinc-700/90 sm:text-xs/4.75 tracking-tight rounded-xl placeholder:text-gray-400/90 focus:outline-none"
+            type="text"
+            value={title}
+            onChange={(e) => {
+              subtaskTitleHandle(e, setTitle, setErrors);
+            }}
+            name="title"
+            id="subtask-title"
+            placeholder="Enter subtask..."
+            ref={inputFocusRef}
+            required
+          />
 
+          <div className="flex overflow-visible">
+            <textarea
+              className="textarea w-full min-h-7 max-h-40 overflow-auto text-gray-700/80 sm:text-xs/4.75 border border-zinc-400/20 rounded-xl px-2 py-1 placeholder:text-gray-400/90 focus:outline-none"
+              type="description"
+              value={description}
+              onChange={(e) => {
+                subtaskDescriptionHandle(e, setDescription);
+              }}
+              name="description"
+              id="subtask-description"
+              placeholder="Description"
+              required
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            {/* Date Input */}
+            
+              <label htmlFor="task_date" className="flex items-end text-sm sm:text-xs text-gray-400/90">
+                Due Date: &nbsp; 
+              <input
+                type="date"
+                className=" p-1 text-xs cursor-pointer rounded-lg focus:outline-none ring-1 ring-gray-500/50"
+                value={dueDate || ""}
+                onChange={(e) => subtaskDueDateHandle(e, setDueDate, setErrors)}
+                name=""
+                id="subtask_date"
+                required
+                />
+                </label>
+       
 
+            {/* Submit Button */}
+            <button type="submit" className="sm:bg-zinc-700 rounded-xl px-2 py-0.5">
+              <IoSend type="submit" className={`sm:hidden text-2xl text-center `} />
+             <p className="hidden sm:flex text-white text-sm"> Add SubTask</p>
+            </button>
+          </div>
+        </div>
 
-      {/* Date Input */}
-    <div className="flex items-center justify-between">
-      <MdDateRange onClick={triggerPicker} className="text-3xl text-gray-700" />
-      <input
-        type="datetime-local"
-        className=" w-0 h-0"
-        selected={selectedDate}
-        onChange={inputDateHandle}
-        ref={datePickerRef}
-        name=""
-        id=""
-        required
-      />
-    </div>
-
-
-
-      {/* Submit Nutton */}
-
-      <button
-        type="submit"
-        className="relative flex items-center justify-center text-center pl-2 text-[26px] rounded-full"
-      >
-        <IoSend className="text-gray-700 text-center" />
-      </button>
+        {Object.keys(errors).length > 0 && (
+          <p className="text-red-600 text-[11px]">{Object.values(errors)[0]}</p>
+        )}
+      </div>
     </form>
   );
 }
