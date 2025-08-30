@@ -2,13 +2,15 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth } from '../config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
-const AuthContext = createContext();  //Create Context
+//Create Context
+const AuthContext = createContext();  
 
-// Provider Component that wraps the app, gives access to child components
+// Provider Component that wraps the app,provides data to child components
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  //useEffect runs everytime Provider Component mounts and onAuthStateChanged is a listener that gets triggered whenever the auth state changes (login, logout, signup)
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);

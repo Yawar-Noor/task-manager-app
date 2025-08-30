@@ -4,12 +4,13 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-  "dev": "vite --host"
-},
+    "dev": "vite --host"
+  },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.11",
     "expo": "^53.0.20",
     "firebase": "^12.0.0",
+    "motion": "^12.23.12",
     "re-resizable": "^6.11.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

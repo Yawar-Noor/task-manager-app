@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import TaskListContainer from "./components/TaskListContainer";
-import Auth from "./components/Auth";
+import Auth from "./components/AuthForm/Auth";
 import { AuthProvider, useAuth } from "./contexts/AuthContext.jsx";
 
 // Returns either loading or Main app
@@ -17,11 +17,11 @@ function AppContent() {
     );
   }
 
-  // currentUser state changes- null login page user then TaskListContainer...
+  // currentUser state changes- when user --> TaskListContainer othewise -->login page...
   return ( 
     <div className=".app-container  w-[100vw] h-[100dvh] flex justify-center items-center bg-zinc-300">
       {currentUser ? (
-        <TaskListContainer /> 
+        <TaskListContainer />
       ) : (
         <Auth />
       )}

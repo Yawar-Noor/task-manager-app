@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import Task from "./Task";
+import Task from "./task/Task";
 import Sidebar from "./Sidebar";
-import TaskForm from "./TaskForm";
+import TaskForm from "./forms/TaskForm";
 import { filterTasks } from "../utils/filterTasksCallback";
 import { sortTasks } from "../utils/handleSort";
 import { useAuth } from "../contexts/AuthContext";
@@ -80,10 +80,10 @@ function TaskListContainer() {
         setSearchTerm={setSearchTerm}
       />
 
-      {/* Main Container */}
+      {/* Main tasks Container */}
       <div
         className={`
-          relative w-full  h-full flex flex-col p-2 sm:px-5 gap-2 
+          relative w-full  h-full flex flex-col p-2 md:px-0 gap-2
           ${isSidebarOpen && "blur-xs md:blur-none"}
           ${isSidebarOpen && "pointer-events-none "}`}
         onClick={() => {
@@ -92,7 +92,7 @@ function TaskListContainer() {
         }}
       >
         {/* Section Header*/}
-        <div className={`flex items-center md:gap-0 justify-between`}>
+        <div className={`flex items-center justify-between md:justify-center md:gap-1`}>
           {/* Mobile screen menu btn */}
           <button
             className="flex md:hidden justify-center items-center text-center md:bg-zinc-100 active:bg-gray-200 text-zinc-700 text-2xl cursor-pointer font-extrabold p-0 rounded"
@@ -101,13 +101,27 @@ function TaskListContainer() {
             <IoMenuOutline className="text-4xl text-zinc-700/90" />
           </button>
 
-          <h3 className="flex items-baseline text-xl font-bold tracking-tight">
-            <span className="text-base text-gray-500 font-medium ">
-              {isCompletedTaskVisible ? "Completed" : "In Progress"}
-            </span>
-          </h3>
+          {/* All Projects */}
+          <button
+            className={`text-sm md:text-base w-fit font-medium text-nowrap rounded-lg px-4 ${!isCompletedTaskVisible && "bg-zinc-300 "}`}
+            onClick={() => {
+              setIsCompletedTaskVisible(false);
+            }}
+          >
+            Tasks
+          </button>
 
-          {/* Mobile screen add task plus icon */}
+          {/* Completed Projects */}
+          <button
+            onClick={() => {
+              setIsCompletedTaskVisible(true);
+            }}
+            className={`text-sm md:text-base w-fit font-medium text-nowrap rounded-lg px-4 ${isCompletedTaskVisible && "bg-zinc-300"}`}
+          >
+            Completed Tasks
+          </button>
+
+          {/* Mobile screen add task(plus) icon */}
           <button
             className="flex  md:hidden justify-center  items-center  md:bg-zinc-100 active:bg-gray-200 text-zinc-600 text-4xl   cursor-pointer rounded"
             onClick={() => {
@@ -117,20 +131,22 @@ function TaskListContainer() {
             <FiPlus />
           </button>
 
-            {/* SubTask form */}
+        </div>
+
+          {/* SubTask form */}
           {isTaskFormVisible && (
             <TaskForm
               taskFormType="mainForm"
               isTaskFormVisible={isTaskFormVisible}
               setIsTaskFormVisible={setIsTaskFormVisible}
+              className="sm:shadow-lg " // Adds bigger shadow and padding on larger screens
             />
           )}
-        </div>
 
         {/* SubTasks Container */}
         <div
           ref={containerRef}
-          className={`w-full h-full flex flex-col gap-3 rounded-2xl px-1
+          className={`w-full h-full flex flex-col gap-3 rounded-2xl px-1 task-container
               ${isTaskFormVisible && "blur-sm overflow-y-hidden"}
               ${fullCardView && "pointer-events-none blur-3xl "}
               ${

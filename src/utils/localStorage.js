@@ -1,11 +1,11 @@
 
-function setLocalStorage(tasks) {
-    localStorage.setItem("tasks", JSON.stringify(tasks))
+function setLocalStorage(key, value) {
+    localStorage.setItem(key, JSON.stringify(value))
 }
 
 
-function getLocalStorage() {
-    return JSON.parse(localStorage.getItem("tasks")) || [];
+function getLocalStorage(key) {
+    return JSON.parse(localStorage.getItem(key)) || [];
         
 }
 
